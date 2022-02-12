@@ -54,7 +54,7 @@ const requestValidator = (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-router.get('/image', requestValidator, (req, res) => {
+router.get('/image', requestValidator, async (req, res) => {
     const queryParams = {
         filename: String(req.query.filename),
         width: req.query.w ? Number(req.query.w) : null,
@@ -82,51 +82,46 @@ router.get('/image', requestValidator, (req, res) => {
         return;
     }
 
-    fs.open(filePath, 'r').then(fileHandler => {
-        fileHandler.readFile().then(file => {
-            ensurePath('./images/resized');
+    const fileHandler = await fs.open(filePath, 'r');
+    const file = await fileHandler.readFile();
 
-            const fileDetails = filename.split('.');
+    ensurePath('./images/resized');
 
-            const name = fileDetails[0];
-            let extension = queryParams.extension ||  fileDetails[1];
+    const fileDetails = filename.split('.');
 
-            if (extension === 'jpg') {
-                extension = 'jpeg';
-            }
+    const name = fileDetails[0];
+    let extension = queryParams.extension ||  fileDetails[1];
 
-            const { width, height } = resizeParams as ResizeOptions;
+    if (extension === 'jpg') {
+        extension = 'jpeg';
+    }
 
-            const resizedFilename = getResizedFilename(name, width, height, extension);
-            const resizedFilePath = path.join('./images/resized', resizedFilename);
+    const { width, height } = resizeParams;
 
-            res.type(extension === 'png' ? 'image/png' : 'image/jpeg');
+    const resizedFilename = getResizedFilename(name, width, height, extension);
+    const resizedFilePath = path.join('./images/resized', resizedFilename);
 
-            if (existsSync(resizedFilePath)) {
-                console.log('REUSING');
-                res.sendFile(path.resolve(resizedFilePath));
-                fileHandler.close();
-            } else {
-                console.log('CREATING');
-                let resizedImage: sharp.Sharp;
+    res.type(extension === 'png' ? 'image/png' : 'image/jpeg');
 
-                if (extension === 'png') {
-                    resizedImage = sharp(file).resize(resizeParams as ResizeOptions).png();
-                } else {
-                    resizedImage = sharp(file).resize(resizeParams as ResizeOptions).jpeg({ mozjpeg: true });
-                }
+    if (existsSync(resizedFilePath)) {
+        res.sendFile(path.resolve(resizedFilePath));
+        fileHandler.close();
+    } else {
+        let resizedImage: sharp.Sharp;
 
-                resizedImage.toBuffer().then(buffer => {
-                    console.log('Sending new resized file');
+        if (extension === 'png') {
+            resizedImage = sharp(file).resize(resizeParams).png();
+        } else {
+            resizedImage = sharp(file).resize(resizeParams).jpeg({ mozjpeg: true });
+        }
 
-                    fs.writeFile(resizedFilePath, buffer).then(() => {
-                        res.sendFile(path.resolve(resizedFilePath));
-                        fileHandler.close();
-                    });
-                });
-            }
+        const buffer = await resizedImage.toBuffer();
+
+        fs.writeFile(resizedFilePath, buffer).then(() => {
+            res.sendFile(path.resolve(resizedFilePath));
+            fileHandler.close();
         });
-    });
+    }
 });
 
 export default router;
