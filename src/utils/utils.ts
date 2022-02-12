@@ -30,6 +30,14 @@ export const validateNumber = (queryString: string) => {
     }
 };
 
+export const validateExtension = (extension: string) => {
+    if (['jpg', 'jpeg', 'png'].includes(extension)) {
+        return;
+    }
+
+    throw new RequestError(`${extension} extension type is not supported`, 400);
+};
+
 export const ensurePath = (path: string) => {
     if (fs.existsSync(path)) {
         return;

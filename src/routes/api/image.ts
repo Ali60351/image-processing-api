@@ -3,13 +3,13 @@ import sharp from 'sharp';
 import { existsSync, promises as fs } from 'fs';
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { ensurePath, getResizedFilename, RequestError, validateNumber, validatePath } from '../../utils';
+import { ensurePath, getResizedFilename, RequestError, validateExtension, validateNumber, validatePath } from '../../utils';
 import { ResizeOptions } from '../../types';
 
 const router = Router();
 
 const requestValidator = (req: Request, res: Response, next: NextFunction) => {
-    const supportedParams = ['filename', 'w', 'h'] as const;
+    const supportedParams = ['filename', 'w', 'h', 'ext'] as const;
     const requiredParams = ['filename'];
     const queryParams = { ...req.query };
 
@@ -17,6 +17,7 @@ const requestValidator = (req: Request, res: Response, next: NextFunction) => {
         filename: (filePath: string) => validatePath('./images', filePath),
         w: validateNumber,
         h: validateNumber,
+        ext: validateExtension
     };
 
     try {
@@ -58,62 +59,71 @@ router.get('/image', requestValidator, (req, res) => {
         filename: String(req.query.filename),
         width: req.query.w ? Number(req.query.w) : null,
         height: req.query.h ? Number(req.query.h) : null,
+        extension: (req.query.ext as string | undefined)
     };
 
     const { filename } = queryParams;
     const filePath = path.join('./images', queryParams.filename);
 
+    let resizeParams: ResizeOptions | null = null;
+
+    if (queryParams.width && queryParams.height) {
+        const { width, height } = queryParams;
+
+        resizeParams = {
+            fit: 'fill',
+            width: width,
+            height: height,
+        };
+    }
+
+    if (!resizeParams) {
+        res.sendFile(path.resolve(filePath));
+        return;
+    }
+
     fs.open(filePath, 'r').then(fileHandler => {
         fileHandler.readFile().then(file => {
-            res.status(200);
-            res.setHeader('Content-Type', 'image/jpeg');
-            res.setHeader('Content-Disposition', `filename: ${filename}`);
+            ensurePath('./images/resized');
 
-            let resizeParams: ResizeOptions | null = null;
+            const fileDetails = filename.split('.');
 
-            if (queryParams.width && queryParams.height) {
-                const { width, height } = queryParams;
+            const name = fileDetails[0];
+            let extension = queryParams.extension ||  fileDetails[1];
 
-                resizeParams = {
-                    fit: 'fill',
-                    width: width,
-                    height: height,
-                };
+            if (extension === 'jpg') {
+                extension = 'jpeg';
             }
 
-            if (resizeParams) {
-                ensurePath('./images/resized');
+            const { width, height } = resizeParams as ResizeOptions;
 
-                const [ name, extension ] = filename.split('.');
-                const { width, height } = resizeParams;
+            const resizedFilename = getResizedFilename(name, width, height, extension);
+            const resizedFilePath = path.join('./images/resized', resizedFilename);
 
-                const resizedFilename = getResizedFilename(name, width, height, extension);
-                const resizedFilePath = path.join('./images/resized', resizedFilename);
+            res.type(extension === 'png' ? 'image/png' : 'image/jpeg');
 
-                if (existsSync(resizedFilePath)) {
-                    fs.open(resizedFilePath, 'r').then(resizedFileHandler => {
-                        resizedFileHandler.readFile().then(resizedFile => {
-                            console.log('Reusing old resized file');
-                            res.send(resizedFile);
-
-                            resizedFileHandler.close();
-                            fileHandler.close();
-                        });
-                    });
-                } else {
-                    const resizedImage = sharp(file).resize(resizeParams);
-                    resizedImage.jpeg({ mozjpeg: true }).toBuffer().then(buffer => {
-                        console.log('Sending new resized file');
-                        res.send(buffer);
-
-                        fs.writeFile(resizedFilePath, buffer).then(() => {
-                            fileHandler.close();
-                        });
-                    });
-                }
-            } else {
-                res.send(file);
+            if (existsSync(resizedFilePath)) {
+                console.log('REUSING');
+                res.sendFile(path.resolve(resizedFilePath));
                 fileHandler.close();
+            } else {
+                console.log('CREATING');
+                let resizedImage: sharp.Sharp;
+
+                if (extension === 'png') {
+                    resizedImage = sharp(file).resize(resizeParams as ResizeOptions).png();
+                } else {
+                    resizedImage = sharp(file).resize(resizeParams as ResizeOptions).jpeg({ mozjpeg: true });
+                }
+
+                resizedImage.toBuffer().then(buffer => {
+                    console.log('Sending new resized file');
+
+                    fs.writeFile(resizedFilePath, buffer).then(() => {
+                        res.sendFile(path.resolve(resizedFilePath));
+                        fileHandler.close();
+                    });
+                });
             }
         });
     });
