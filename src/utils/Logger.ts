@@ -1,23 +1,35 @@
 import chalk from 'chalk';
 
-export default class Logger {
-    private log = (color: chalk.Chalk = chalk.black, message: string ) => {
-        console.log(color(message), '-', new Date().toString());
+type messageType = Array<string | object>;
+
+class Logger {
+    private log = (color: chalk.Chalk = chalk.black, messages: messageType ) => {
+        const processedMessages = messages.map(message => {
+            if (typeof message === 'string') {
+                return color(message);
+            } else {
+                return message;
+            }
+        });
+
+        console.log(...processedMessages, '-', new Date().toString().split('GMT')[0]);
     };
 
-    info = (message: string) => {
-        this.log(chalk.blueBright, message);
+    info = (...messages: messageType) => {
+        this.log(chalk.blueBright, messages);
     };
 
-    success = (message: string) => {
-        this.log(chalk.greenBright, message);
+    success = (...messages: messageType) => {
+        this.log(chalk.green, messages);
     };
 
-    warn = (message: string) => {
-        this.log(chalk.yellowBright, message);
+    warn = (...messages: messageType) => {
+        this.log(chalk.yellowBright, messages);
     };
 
-    error = (message: string) => {
-        this.log(chalk.redBright, message);
+    error = (...messages: messageType) => {
+        this.log(chalk.redBright, messages);
     };
 }
+
+export default new Logger();

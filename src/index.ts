@@ -1,6 +1,7 @@
 import express from 'express';
 
 import routes from './routes';
+import { logger } from './utils';
 
 const app = express();
 const port = 3000;
@@ -8,5 +9,5 @@ const port = 3000;
 app.use(routes);
 
 app.listen(port, () => {
-    console.log(`Image processing API enabled on http://localhost:${port}`);
+    logger.info(`Image processing API enabled on http://localhost:${port}`);
 });

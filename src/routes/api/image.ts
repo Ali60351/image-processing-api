@@ -3,7 +3,9 @@ import sharp from 'sharp';
 import { existsSync, promises as fs } from 'fs';
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { ensurePath, getResizedFilename, RequestError, validateExtension, validateNumber, validatePath } from '../../utils';
+import {
+    ensurePath, getResizedFilename, logger, RequestError, validateExtension, validateNumber, validatePath
+} from '../../utils';
 import { ResizeOptions } from '../../types';
 
 const router = Router();
@@ -43,8 +45,10 @@ const requestValidator = (req: Request, res: Response, next: NextFunction) => {
         next();
     } catch (e: unknown) {
         if (e instanceof RequestError) {
+            logger.warn('Input:', queryParams, e.message);
             res.status(e.status).json({ error: e.message });
         } else if (e instanceof Error) {
+            logger.error('Input:', queryParams, e.message);
             res.status(500).json({ error: 'Unexpected error', message: e.message });
         } else {
             console.error(e);
@@ -78,6 +82,7 @@ router.get('/image', requestValidator, async (req, res) => {
     }
 
     if (!resizeParams) {
+        logger.success('No resizing required for', filePath);
         res.sendFile(path.resolve(filePath));
         return;
     }
@@ -104,6 +109,7 @@ router.get('/image', requestValidator, async (req, res) => {
     res.type(extension === 'png' ? 'image/png' : 'image/jpeg');
 
     if (existsSync(resizedFilePath)) {
+        logger.success('Using cached file for', resizedFilename);
         res.sendFile(path.resolve(resizedFilePath));
         fileHandler.close();
     } else {
@@ -118,6 +124,7 @@ router.get('/image', requestValidator, async (req, res) => {
         const buffer = await resizedImage.toBuffer();
 
         fs.writeFile(resizedFilePath, buffer).then(() => {
+            logger.success('Using new file for', resizedFilename);
             res.sendFile(path.resolve(resizedFilePath));
             fileHandler.close();
         });
