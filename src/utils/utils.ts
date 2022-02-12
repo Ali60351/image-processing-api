@@ -2,12 +2,22 @@ import path from 'path';
 import fs from 'fs';
 import RequestError from './RequestError';
 
-export const validatePath = (...filePath: string[]) => {
+export const fileExists = (...filePath: string[]) => {
     const normalizedPath = path.join(...filePath);
+    return fs.existsSync(normalizedPath);
+};
 
-    if (!fs.existsSync(normalizedPath)) {
-        throw new RequestError(`${path.basename(normalizedPath)} is not available`, 404);
+export const validatePath = (...filePath: string[]) => {
+    if (!fileExists(...filePath)) {
+        const filename = filePath[filePath.length - 1];
+        throw new RequestError(`${filename} is not available`, 404);
     }
+};
+
+export const getResizedFilename = (
+    filename: string, width: string | number, height: string | number, extension: string
+) => {
+    return `${filename}-${width}-${height}.${extension}`;
 };
 
 export const validateNumber = (queryString: string) => {

@@ -1,9 +1,10 @@
 import path from 'path';
 import sharp from 'sharp';
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs, writeFileSync } from 'fs';
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { RequestError, validateNumber, validatePath } from '../../utils';
+import { getResizedFilename, RequestError, validateNumber, validatePath } from '../../utils';
+import { ResizeOptions } from '../../types';
 
 const router = Router();
 
@@ -59,30 +60,55 @@ router.get('/image', requestValidator, (req, res) => {
         height: req.query.h ? Number(req.query.h) : null,
     };
 
+    const { filename } = queryParams;
     const filePath = path.join('./images', queryParams.filename);
 
     fs.open(filePath, 'r').then(fileHandler => {
         fileHandler.readFile().then(file => {
             res.status(200);
             res.setHeader('Content-Type', 'image/jpeg');
-            res.setHeader('Content-Disposition', `filename: ${path.basename(filePath)}`);
+            res.setHeader('Content-Disposition', `filename: ${filename}`);
 
-            let resizeParams: sharp.ResizeOptions | null = null;
+            let resizeParams: ResizeOptions | null = null;
 
             if (queryParams.width && queryParams.height) {
+                const { width, height } = queryParams;
+
                 resizeParams = {
                     fit: 'fill',
-                    width: queryParams.width,
-                    height: queryParams.height,
+                    width: width,
+                    height: height,
                 };
             }
 
             if (resizeParams) {
-                const resizedImage = sharp(file).resize(resizeParams);
-                resizedImage.jpeg({ mozjpeg: true }).toBuffer().then(buffer => {
-                    res.send(buffer);
-                    fileHandler.close();
-                });
+                const [ name, extension ] = filename.split('.');
+                const { width, height } = resizeParams;
+
+                const resizedFilename = getResizedFilename(name, width, height, extension);
+                const resizedFilePath = path.join('./images/resized', resizedFilename);
+
+                if (existsSync(resizedFilePath)) {
+                    fs.open(resizedFilePath, 'r').then(resizedFileHandler => {
+                        resizedFileHandler.readFile().then(resizedFile => {
+                            console.log('Reusing old resized file');
+                            res.send(resizedFile);
+
+                            resizedFileHandler.close();
+                            fileHandler.close();
+                        });
+                    });
+                } else {
+                    const resizedImage = sharp(file).resize(resizeParams);
+                    resizedImage.jpeg({ mozjpeg: true }).toBuffer().then(buffer => {
+                        console.log('Sending new resized file');
+                        res.send(buffer);
+
+                        fs.writeFile(resizedFilePath, buffer).then(() => {
+                            fileHandler.close();
+                        });
+                    });
+                }
             } else {
                 res.send(file);
                 fileHandler.close();
