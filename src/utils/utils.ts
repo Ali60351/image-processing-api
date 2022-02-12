@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import RequestError from './RequestError';
+import { ResizeOptions, ResizeQueryParams } from '../types';
 
 export const fileExists = (...filePath: string[]) => {
     const normalizedPath = path.join(...filePath);
@@ -8,9 +9,14 @@ export const fileExists = (...filePath: string[]) => {
 };
 
 export const validatePath = (...filePath: string[]) => {
+    const filename = filePath[filePath.length - 1];
+
     if (!fileExists(...filePath)) {
-        const filename = filePath[filePath.length - 1];
         throw new RequestError(`${filename} is not available`, 404);
+    }
+
+    if (filePath[filePath.length - 1].split('.').length !== 2) {
+        throw new RequestError(`${filename} is not a valid file name`, 404);
     }
 };
 
@@ -44,4 +50,33 @@ export const ensurePath = (path: string) => {
     } else {
         fs.mkdirSync(path, { recursive: true });
     }
+};
+
+export const getResizeParams = (queryParams: ResizeQueryParams) => {
+    let resizeParams: ResizeOptions | null = null;
+
+    if (queryParams.width && queryParams.height) {
+        const { width, height } = queryParams;
+
+        resizeParams = {
+            fit: 'fill',
+            width: width,
+            height: height,
+        };
+    }
+
+    return resizeParams;
+};
+
+export const getNewFileDetails = (filename: string, extension: string | undefined) => {
+    const fileDetails = filename.split('.');
+
+    const name = fileDetails[0];
+    let fileExtension = extension || fileDetails[1];
+
+    if (fileExtension === 'jpg') {
+        fileExtension = 'jpeg';
+    }
+
+    return { name, extension: fileExtension };
 };

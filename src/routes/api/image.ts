@@ -1,65 +1,16 @@
 import path from 'path';
 import sharp from 'sharp';
 import { existsSync, promises as fs } from 'fs';
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 
-import {
-    ensurePath, getResizedFilename, logger, RequestError, validateExtension, validateNumber, validatePath
-} from '../../utils';
-import { ResizeOptions } from '../../types';
+import { ensurePath, getNewFileDetails, getResizedFilename, getResizeParams, logger } from '../../utils';
+import { ResizeQueryParams } from '../../types';
+import { resizeRequestValidator } from './middlewares';
 
 const router = Router();
 
-const requestValidator = (req: Request, res: Response, next: NextFunction) => {
-    const supportedParams = ['filename', 'w', 'h', 'ext'] as const;
-    const requiredParams = ['filename'];
-    const queryParams = { ...req.query };
-
-    const paramValidators = {
-        filename: (filePath: string) => validatePath('./images', filePath),
-        w: validateNumber,
-        h: validateNumber,
-        ext: validateExtension
-    };
-
-    try {
-        supportedParams.forEach(key => {
-            const queryParam = queryParams[key];
-
-            if (!queryParam) {
-                if (requiredParams.includes(key)) {
-                    throw new RequestError(`${key} is missing in query params`, 400);
-                } else {
-                    return;
-                }
-            }
-
-            if (typeof queryParam !== 'string') {
-                throw new RequestError(`${key} is of invalid type`, 400);
-            }
-
-            const validator = paramValidators[key];
-            validator(queryParam);
-        });
-
-        next();
-    } catch (e: unknown) {
-        if (e instanceof RequestError) {
-            logger.warn('Input:', queryParams, e.message);
-            res.status(e.status).json({ error: e.message });
-        } else if (e instanceof Error) {
-            logger.error('Input:', queryParams, e.message);
-            res.status(500).json({ error: 'Unexpected error', message: e.message });
-        } else {
-            console.error(e);
-        }
-
-        res.end();
-    }
-};
-
-router.get('/image', requestValidator, async (req, res) => {
-    const queryParams = {
+router.get('/image', resizeRequestValidator, async (req, res) => {
+    const queryParams: ResizeQueryParams = {
         filename: String(req.query.filename),
         width: req.query.w ? Number(req.query.w) : null,
         height: req.query.h ? Number(req.query.h) : null,
@@ -69,17 +20,7 @@ router.get('/image', requestValidator, async (req, res) => {
     const { filename } = queryParams;
     const filePath = path.join('./images', queryParams.filename);
 
-    let resizeParams: ResizeOptions | null = null;
-
-    if (queryParams.width && queryParams.height) {
-        const { width, height } = queryParams;
-
-        resizeParams = {
-            fit: 'fill',
-            width: width,
-            height: height,
-        };
-    }
+    const resizeParams = getResizeParams(queryParams);
 
     if (!resizeParams) {
         logger.success('No resizing required for', filePath);
@@ -92,15 +33,7 @@ router.get('/image', requestValidator, async (req, res) => {
 
     ensurePath('./images/resized');
 
-    const fileDetails = filename.split('.');
-
-    const name = fileDetails[0];
-    let extension = queryParams.extension ||  fileDetails[1];
-
-    if (extension === 'jpg') {
-        extension = 'jpeg';
-    }
-
+    const { name, extension } = getNewFileDetails(filename, queryParams.extension);
     const { width, height } = resizeParams;
 
     const resizedFilename = getResizedFilename(name, width, height, extension);
