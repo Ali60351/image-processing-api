@@ -29,3 +29,11 @@ export const validateNumber = (queryString: string) => {
         throw new RequestError(`${queryString} is not a valid number`, 400);
     }
 };
+
+export const ensurePath = (path: string) => {
+    if (fs.existsSync(path)) {
+        return;
+    } else {
+        fs.mkdirSync(path, { recursive: true });
+    }
+};

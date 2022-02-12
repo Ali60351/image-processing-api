@@ -1,9 +1,9 @@
 import path from 'path';
 import sharp from 'sharp';
-import { existsSync, promises as fs, writeFileSync } from 'fs';
+import { existsSync, promises as fs } from 'fs';
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { getResizedFilename, RequestError, validateNumber, validatePath } from '../../utils';
+import { ensurePath, getResizedFilename, RequestError, validateNumber, validatePath } from '../../utils';
 import { ResizeOptions } from '../../types';
 
 const router = Router();
@@ -82,6 +82,8 @@ router.get('/image', requestValidator, (req, res) => {
             }
 
             if (resizeParams) {
+                ensurePath('./images/resized');
+
                 const [ name, extension ] = filename.split('.');
                 const { width, height } = resizeParams;
 
