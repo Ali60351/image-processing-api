@@ -1,11 +1,11 @@
 import express from 'express';
 
+import routes from './routes';
+
 const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => {
-    res.send('Welcome to Image Processing API');
-});
+app.use(routes);
 
 app.listen(port, () => {
     console.log(`Image processing API enabled on http://localhost:${port}`);
