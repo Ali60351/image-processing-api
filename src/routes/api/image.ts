@@ -1,9 +1,8 @@
 import { Router } from 'express';
+import { fetchImage } from '../../utils';
 
 const router = Router();
 
-router.get('/image', (req, res) => {
-    res.status(200).send('Route Active!');
-});
+router.get('/image', fetchImage);
 
 export default router;

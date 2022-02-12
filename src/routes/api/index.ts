@@ -1,8 +1,15 @@
 import { Router } from 'express';
-import versionOneRouter from './v1';
+
+import imageRoute from './image';
+
+const routes = [
+    imageRoute
+];
 
 const router = Router();
 
-router.use('/api', versionOneRouter);
+routes.map(route => {
+    router.use('/api', route);
+});
 
 export default router;
