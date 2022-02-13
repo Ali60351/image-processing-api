@@ -31,3 +31,11 @@ The image processing API is available on the endpoint `/api/image`
 | Name     | Function                                         |
 | -------- | ------------------------------------------------ |
 | NODE_ENV | If set to `test`, disable the logging of server. |
+
+## Example Usages
+
+| Usecase                                            | URL                                                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Get original image for `976013.jpeg`               | `http://localhost:3000/api/image?filename=976013.jpeg`                       |
+| Get `976013.jpeg` in 1920x1080 size                | `http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080`         |
+| Get `976013.jpeg` in 1920x1080 size and png format | `http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080&ext=png` |
