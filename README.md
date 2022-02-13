@@ -34,8 +34,8 @@ The image processing API is available on the endpoint `/api/image`
 
 ## Example Usages
 
-| Usecase                                            | URL                                                                          |
-| -------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Get original image for `976013.jpeg`               | `http://localhost:3000/api/image?filename=976013.jpeg`                       |
-| Get `976013.jpeg` in 1920x1080 size                | `http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080`         |
-| Get `976013.jpeg` in 1920x1080 size and png format | `http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080&ext=png` |
+| Usecase                                            | URL                                                                                |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Get original image for `976013.jpeg`               | [LINK](http://localhost:3000/api/image?filename=976013.jpeg)                       |
+| Get `976013.jpeg` in 1920x1080 size                | [LINK](http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080)         |
+| Get `976013.jpeg` in 1920x1080 size and png format | [LINK](http://localhost:3000/api/image?filename=976013.jpeg&w=1920&h=1080&ext=png) |
