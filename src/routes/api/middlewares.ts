@@ -33,6 +33,10 @@ export const resizeRequestValidator = (req: Request, res: Response, next: NextFu
             validator(queryParam);
         });
 
+        if (queryParams.ext && !(queryParams.w && queryParams.h)) {
+            throw new RequestError('Type conversion requires resizing too', 400);
+        }
+
         next();
     } catch (e: unknown) {
         if (e instanceof RequestError) {
