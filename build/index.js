@@ -12,9 +12,7 @@ app.use(routes_1.default);
 app.get('/', (req, res) => {
     res.json({
         message: 'Welcome to image processing API',
-        availableEndpoints: [
-            '/image/api'
-        ]
+        availableEndpoints: ['/image/api'],
     });
 });
 app.listen(port, () => {

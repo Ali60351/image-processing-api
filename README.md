@@ -6,12 +6,13 @@
 
 ## Scripts
 
-| Name             | Function                                                 |
-| ---------------- | -------------------------------------------------------- |
-| `npm run start`  | Run the express server on `localhost:3000`               |
-| `npm run test`   | Compile the TS project and run jasmine on compiled files |
-| `npm run eslint` | Check the TS project for any ESLint errors               |
-| `npm run lint`   | Fix any prettier issues present in TS project            |
+| Name                  | Function                                                             |
+| --------------------- | -------------------------------------------------------------------- |
+| `npm run start`       | Run the express server on `localhost:3000` using TS files            |
+| `npm run start-build` | Run the express server on `localhost:3000` using transpiled JS files |
+| `npm run test`        | Compile the TS project and run jasmine on compiled files             |
+| `npm run eslint`      | Check the TS project for any ESLint errors                           |
+| `npm run lint`        | Fix any prettier issues present in TS project                        |
 
 ## Endpoint
 

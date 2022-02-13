@@ -10,7 +10,7 @@ const resizeRequestValidator = (req, res, next) => {
         filename: (filePath) => (0, utils_1.validatePath)('./images', filePath),
         w: utils_1.validateNumber,
         h: utils_1.validateNumber,
-        ext: utils_1.validateExtension
+        ext: utils_1.validateExtension,
     };
     try {
         supportedParams.forEach(key => {

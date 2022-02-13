@@ -24,7 +24,7 @@ router.get('/image', middlewares_1.resizeRequestValidator, (req, res) => __await
         filename: String(req.query.filename),
         width: req.query.w ? Number(req.query.w) : null,
         height: req.query.h ? Number(req.query.h) : null,
-        extension: req.query.ext
+        extension: req.query.ext,
     };
     const { filename } = queryParams;
     const filePath = path_1.default.join('./images', queryParams.filename);
