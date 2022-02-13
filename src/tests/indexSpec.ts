@@ -1,6 +1,5 @@
-import { default as request }  from 'supertest';
-
 import app from '../index';
+import { default as request }  from 'supertest';
 
 describe('Basic server tests', () => {
     it('Checks if server is running', async () => {

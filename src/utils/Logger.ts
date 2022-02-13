@@ -4,6 +4,10 @@ type messageType = Array<string | object>;
 
 class Logger {
     private log = (color: chalk.Chalk = chalk.black, messages: messageType ) => {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
+
         const processedMessages = messages.map(message => {
             if (typeof message === 'string') {
                 return color(message);

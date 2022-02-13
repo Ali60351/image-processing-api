@@ -7,6 +7,9 @@ const chalk_1 = __importDefault(require("chalk"));
 class Logger {
     constructor() {
         this.log = (color = chalk_1.default.black, messages) => {
+            if (process.env.NODE_ENV === 'test') {
+                return;
+            }
             const processedMessages = messages.map(message => {
                 if (typeof message === 'string') {
                     return color(message);
