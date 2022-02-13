@@ -5,7 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "npx tsc && jasmine",
-    "start": "nodemon src/index.ts"
+    "start": "nodemon src/index.ts",
+    "lint": "prettier --write src/",
+    "eslint": "eslint src/"
   },
   "repository": {
     "type": "git",
