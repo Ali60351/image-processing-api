@@ -3,7 +3,7 @@ import chalk from 'chalk';
 type messageType = Array<string | object>;
 
 class Logger {
-    private log = (color: chalk.Chalk = chalk.black, messages: messageType ) => {
+    private log = (color: chalk.Chalk = chalk.black, messages: messageType) => {
         if (process.env.NODE_ENV === 'test') {
             return;
         }

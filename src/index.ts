@@ -11,9 +11,7 @@ app.use(routes);
 app.get('/', (req, res) => {
     res.json({
         message: 'Welcome to image processing API',
-        availableEndpoints: [
-            '/image/api'
-        ]
+        availableEndpoints: ['/image/api'],
     });
 });
 

@@ -14,7 +14,7 @@ router.get('/image', resizeRequestValidator, async (req, res) => {
         filename: String(req.query.filename),
         width: req.query.w ? Number(req.query.w) : null,
         height: req.query.h ? Number(req.query.h) : null,
-        extension: (req.query.ext as string | undefined)
+        extension: req.query.ext as string | undefined,
     };
 
     const { filename } = queryParams;

@@ -21,7 +21,10 @@ export const validatePath = (...filePath: string[]) => {
 };
 
 export const getResizedFilename = (
-    filename: string, width: string | number, height: string | number, extension: string
+    filename: string,
+    width: string | number,
+    height: string | number,
+    extension: string
 ) => {
     return `${filename}-${width}-${height}.${extension}`;
 };

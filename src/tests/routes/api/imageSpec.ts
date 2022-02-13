@@ -1,5 +1,5 @@
 import app from '../../../index';
-import supertest  from 'supertest';
+import supertest from 'supertest';
 
 const request = supertest(app);
 

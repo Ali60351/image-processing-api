@@ -2,9 +2,7 @@ import { Router } from 'express';
 
 import apiRouter from './api';
 
-const routes = [
-    apiRouter
-];
+const routes = [apiRouter];
 
 const router = Router();
 

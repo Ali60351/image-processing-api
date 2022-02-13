@@ -10,7 +10,7 @@ export const resizeRequestValidator = (req: Request, res: Response, next: NextFu
         filename: (filePath: string) => validatePath('./images', filePath),
         w: validateNumber,
         h: validateNumber,
-        ext: validateExtension
+        ext: validateExtension,
     };
 
     try {

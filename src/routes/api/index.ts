@@ -2,9 +2,7 @@ import { Router } from 'express';
 
 import imageRoute from './image';
 
-const routes = [
-    imageRoute
-];
+const routes = [imageRoute];
 
 const router = Router();
 
