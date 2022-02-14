@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
-const sharp_1 = __importDefault(require("sharp"));
 const fs_1 = require("fs");
 const express_1 = require("express");
 const utils_1 = require("../../utils");
@@ -48,19 +47,11 @@ router.get('/image', middlewares_1.resizeRequestValidator, (req, res) => __await
         fileHandler.close();
     }
     else {
-        let resizedImage;
-        if (extension === 'png') {
-            resizedImage = (0, sharp_1.default)(file).resize(resizeParams).png();
-        }
-        else {
-            resizedImage = (0, sharp_1.default)(file).resize(resizeParams).jpeg({ mozjpeg: true });
-        }
-        const buffer = yield resizedImage.toBuffer();
-        fs_1.promises.writeFile(resizedFilePath, buffer).then(() => {
-            utils_1.logger.success('Using new file for', resizedFilename);
-            res.sendFile(path_1.default.resolve(resizedFilePath));
-            fileHandler.close();
-        });
+        const imageProcessor = new utils_1.ImageProcessor(file, resizeParams, resizedFilePath, extension);
+        yield imageProcessor.processImage();
+        utils_1.logger.success('Using new file for', resizedFilename);
+        res.sendFile(path_1.default.resolve(resizedFilePath));
+        fileHandler.close();
     }
 }));
 exports.default = router;

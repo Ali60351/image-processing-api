@@ -15,7 +15,7 @@ app.get('/', (req: express.Request, res: express.Response): void => {
     });
 });
 
-app.listen(port, () => {
+app.listen(port, (): void => {
     logger.info(`Image processing API enabled on http://localhost:${port}`);
 });
 

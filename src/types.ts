@@ -11,3 +11,8 @@ export interface ResizeQueryParams {
     height: number | null;
     extension: string | undefined;
 }
+
+export interface FileDetails {
+    name: string;
+    extension: string;
+}
