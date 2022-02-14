@@ -33,8 +33,6 @@ router.get('/image', middlewares_1.resizeRequestValidator, (req, res) => __await
         res.sendFile(path_1.default.resolve(filePath));
         return;
     }
-    const fileHandler = yield fs_1.promises.open(filePath, 'r');
-    const file = yield fileHandler.readFile();
     (0, utils_1.ensurePath)('./images/resized');
     const { name, extension } = (0, utils_1.getNewFileDetails)(filename, queryParams.extension);
     const { width, height } = resizeParams;
@@ -44,14 +42,12 @@ router.get('/image', middlewares_1.resizeRequestValidator, (req, res) => __await
     if ((0, fs_1.existsSync)(resizedFilePath)) {
         utils_1.logger.success('Using cached file for', resizedFilename);
         res.sendFile(path_1.default.resolve(resizedFilePath));
-        fileHandler.close();
     }
     else {
-        const imageProcessor = new utils_1.ImageProcessor(file, resizeParams, resizedFilePath, extension);
+        const imageProcessor = new utils_1.ImageProcessor(filePath, resizeParams, resizedFilePath, extension);
         yield imageProcessor.processImage();
         utils_1.logger.success('Using new file for', resizedFilename);
         res.sendFile(path_1.default.resolve(resizedFilePath));
-        fileHandler.close();
     }
 }));
 exports.default = router;
