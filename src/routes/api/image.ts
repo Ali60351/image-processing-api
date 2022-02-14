@@ -2,7 +2,14 @@ import path from 'path';
 import { existsSync } from 'fs';
 import { Router, Request, Response } from 'express';
 
-import { ensurePath, getNewFileDetails, getResizedFilename, getResizeParams, ImageProcessor, logger } from '../../utils';
+import {
+    ensurePath,
+    getNewFileDetails,
+    getResizedFilename,
+    getResizeParams,
+    ImageProcessor,
+    logger,
+} from '../../utils';
 import { ResizeQueryParams } from '../../types';
 import { resizeRequestValidator } from './middlewares';
 

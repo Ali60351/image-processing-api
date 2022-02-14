@@ -32,31 +32,31 @@ class ImageProcessor {
         return;
     };
 
-    processImage = (): Promise<void> => new Promise((
-        resolve: () => void, reject: (message: string) => void
-    ) => {
-        try {
-            let resizedImage: sharp.Sharp;
+    processImage = (): Promise<void> => {
+        return new Promise((resolve: () => void, reject: (message: string) => void) => {
+            try {
+                let resizedImage: sharp.Sharp;
 
-            this.getImageBuffer().then(imageBuffer => {
-                if (this.extension === 'png') {
-                    resizedImage = sharp(imageBuffer).resize(this.resizeParams).png();
-                } else {
-                    resizedImage = sharp(imageBuffer).resize(this.resizeParams).jpeg({ mozjpeg: true });
+                this.getImageBuffer().then(imageBuffer => {
+                    if (this.extension === 'png') {
+                        resizedImage = sharp(imageBuffer).resize(this.resizeParams).png();
+                    } else {
+                        resizedImage = sharp(imageBuffer).resize(this.resizeParams).jpeg({ mozjpeg: true });
+                    }
+
+                    this.saveImage(resizedImage).then(resolve);
+                });
+            } catch (e: unknown) {
+                const errorMessage = `Unexpected error occurred while converting ${this.destination}`;
+
+                if (e instanceof Error) {
+                    logger.error(errorMessage, e.message);
                 }
 
-                this.saveImage(resizedImage).then(resolve);
-            });
-        } catch (e: unknown) {
-            const errorMessage = `Unexpected error occurred while converting ${this.destination}`;
-
-            if (e instanceof Error) {
-                logger.error(errorMessage, e.message);
+                reject(errorMessage);
             }
-
-            reject(errorMessage);
-        }
-    });
+        });
+    };
 }
 
 export default ImageProcessor;
