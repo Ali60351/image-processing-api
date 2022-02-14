@@ -1,5 +1,5 @@
 import path from 'path';
-import { existsSync, promises as fs } from 'fs';
+import { existsSync } from 'fs';
 import { Router, Request, Response } from 'express';
 
 import { ensurePath, getNewFileDetails, getResizedFilename, getResizeParams, ImageProcessor, logger } from '../../utils';
@@ -27,9 +27,6 @@ router.get('/image', resizeRequestValidator, async (req: Request, res: Response)
         return;
     }
 
-    const fileHandler = await fs.open(filePath, 'r');
-    const file = await fileHandler.readFile();
-
     ensurePath('./images/resized');
 
     const { name, extension } = getNewFileDetails(filename, queryParams.extension);
@@ -43,14 +40,12 @@ router.get('/image', resizeRequestValidator, async (req: Request, res: Response)
     if (existsSync(resizedFilePath)) {
         logger.success('Using cached file for', resizedFilename);
         res.sendFile(path.resolve(resizedFilePath));
-        fileHandler.close();
     } else {
-        const imageProcessor = new ImageProcessor(file, resizeParams, resizedFilePath, extension);
+        const imageProcessor = new ImageProcessor(filePath, resizeParams, resizedFilePath, extension);
         await imageProcessor.processImage();
 
         logger.success('Using new file for', resizedFilename);
         res.sendFile(path.resolve(resizedFilePath));
-        fileHandler.close();
     }
 });
 

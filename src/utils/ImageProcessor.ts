@@ -6,16 +6,31 @@ import logger from './Logger';
 
 class ImageProcessor {
     readonly resizeParams: ResizeOptions;
-    readonly imageBuffer: Buffer;
+    readonly filePath: string;
     readonly extension: string;
     readonly destination: string;
 
-    constructor(file: Buffer, resizeParams: ResizeOptions, destination: string, extension?: string) {
+    constructor(filePath: string, resizeParams: ResizeOptions, destination: string, extension?: string) {
         this.resizeParams = resizeParams;
-        this.imageBuffer = file;
+        this.filePath = filePath;
         this.extension = extension || 'jpeg';
         this.destination = destination;
     }
+
+    getImageBuffer = async (): Promise<Buffer> => {
+        const fileHandler = await fs.open(this.filePath, 'r');
+        const imageBuffer = await fileHandler.readFile();
+
+        fileHandler.close();
+
+        return imageBuffer;
+    };
+
+    saveImage = async (resizedImage: sharp.Sharp): Promise<void> => {
+        const buffer = await resizedImage.toBuffer();
+        await fs.writeFile(this.destination, buffer);
+        return;
+    };
 
     processImage = (): Promise<void> => new Promise((
         resolve: () => void, reject: (message: string) => void
@@ -23,14 +38,14 @@ class ImageProcessor {
         try {
             let resizedImage: sharp.Sharp;
 
-            if (this.extension === 'png') {
-                resizedImage = sharp(this.imageBuffer).resize(this.resizeParams).png();
-            } else {
-                resizedImage = sharp(this.imageBuffer).resize(this.resizeParams).jpeg({ mozjpeg: true });
-            }
+            this.getImageBuffer().then(imageBuffer => {
+                if (this.extension === 'png') {
+                    resizedImage = sharp(imageBuffer).resize(this.resizeParams).png();
+                } else {
+                    resizedImage = sharp(imageBuffer).resize(this.resizeParams).jpeg({ mozjpeg: true });
+                }
 
-            resizedImage.toBuffer().then(buffer => {
-                fs.writeFile(this.destination, buffer).then(resolve);
+                this.saveImage(resizedImage).then(resolve);
             });
         } catch (e: unknown) {
             const errorMessage = `Unexpected error occurred while converting ${this.destination}`;
