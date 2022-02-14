@@ -8,7 +8,7 @@ const port = 3000;
 
 app.use(routes);
 
-app.get('/', (req, res) => {
+app.get('/', (req: express.Request, res: express.Response): void => {
     res.json({
         message: 'Welcome to image processing API',
         availableEndpoints: ['/image/api'],

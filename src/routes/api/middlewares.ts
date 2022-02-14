@@ -45,8 +45,6 @@ export const resizeRequestValidator = (req: Request, res: Response, next: NextFu
         } else if (e instanceof Error) {
             logger.error('Input:', queryParams, e.message);
             res.status(500).json({ error: 'Unexpected error', message: e.message });
-        } else {
-            console.error(e);
         }
 
         res.end();
